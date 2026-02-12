@@ -1,46 +1,55 @@
-# 🤖 Career Automation Agent (LinkedIn Auto-Applier)
+📦 1. requirements.txt
 
-> **Automação Inteligente de Candidaturas com Geração de Currículos Dinâmicos**
+Este arquivo lista todas as bibliotecas externas que o Python precisa baixar para o seu robô funcionar.
 
-Este projeto é um agente autônomo desenvolvido em Python que varre o LinkedIn em busca de vagas compatíveis com seu perfil, gera currículos PDF personalizados para cada vaga e realiza a candidatura automaticamente (Easy Apply).
+Crie um arquivo chamado requirements.txt na raiz do projeto e cole isso:
 
-## 🚀 Funcionalidades
+(Nota: Incluí openai pois seu resume_tailor.py provavelmente usa a API da OpenAI para adaptar o currículo. Se você estiver usando outra IA ou lógica local, pode remover).
 
-* **Busca Massiva:** Varre múltiplos nichos (Dados, Dev, Segurança, Suporte) simultaneamente.
-* **Scroll Infinito:** Carrega centenas de vagas automaticamente antes de filtrar.
-* **Currículos Dinâmicos (PDF):** Gera um CV em PDF novo para cada vaga, destacando as skills que a descrição pede.
-* **Modo Bilíngue:** Detecta se a vaga é internacional e gera o currículo em **Inglês** automaticamente.
-* **Preenchimento Inteligente:** Responde formulários de "Anos de Experiência", "Pretensão Salarial" e "Visto" baseado em um arquivo de configuração (`answers.json`).
-* **Notificações Telegram:** Envia relatórios em tempo real sobre vagas encontradas e aplicadas direto no seu celular.
-* **Anti-Detecção:** Usa perfil local do Chrome e técnicas de navegação humana para evitar bloqueios.
+Como instalar:
+Quem baixar seu projeto (ou você mesmo em outra máquina) só precisará rodar:
+pip install -r requirements.txt
+📘 2. README.md
 
-## 🛠️ Instalação
+Este é o cartão de visitas do seu projeto. Ele explica o que o robô faz, como configurar e como rodar.
 
-1.  **Clone o repositório:**
-    ```bash
-    git clone [https://github.com/seu-usuario/career-automation-agent.git](https://github.com/seu-usuario/career-automation-agent.git)
-    cd career-automation-agent
-    ```
+Crie um arquivo chamado README.md e cole este conteúdo (ele usa a formatação Markdown, que fica bonita no GitHub):
+2. Cérebro do Robô (answers.json)
 
-2.  **Crie um ambiente virtual (Opcional, mas recomendado):**
-    ```bash
-    python -m venv .venv
-    # Windows:
-    .venv\Scripts\activate
-    # Linux/Mac:
-    source .venv/bin/activate
-    ```
+Configure as respostas padrão para os formulários do LinkedIn no arquivo answers.json:
+3. Seu Perfil Base (master_profile.json)
 
-3.  **Instale as dependências:**
-    ```bash
-    pip install -r requirements.txt
-    ```
+Certifique-se de que seus dados (Experiência, Educação, Skills) estão atualizados neste arquivo JSON para que a IA possa montar os currículos.
+▶️ Como Usar
 
-## ⚙️ Configuração
+Certifique-se de que o Chrome está fechado e execute:
 
-### 1. Variáveis de Ambiente (`.env`)
-Crie um arquivo `.env` na raiz do projeto e adicione suas chaves:
-```env
-OPENAI_API_KEY=sua_chave_aqui
-TELEGRAM_BOT_TOKEN=seu_token_telegram
-TELEGRAM_CHAT_ID=seu_chat_id
+O robô irá:
+
+    Abrir o navegador (pode pedir login na 1ª vez).
+
+    Coletar vagas.
+
+    Gerar PDFs e aplicar.
+
+    Te avisar no Telegram.
+
+    Limpar os arquivos temporários ao final.
+
+📂 Estrutura do Projeto
+
+    main.py: O maestro que coordena tudo.
+
+    smart_scanner.py: O motor de navegação (Selenium) com lógica anti-crash.
+
+    clean_builder.py: Gerador de PDFs limpos e profissionais (ReportLab).
+
+    resume_tailor.py: Inteligência Artificial que adapta o conteúdo do CV.
+
+    telegram_notifier.py: Módulo de comunicação.
+
+⚠️ Disclaimer
+
+Este projeto é para fins educativos e de automação pessoal. O uso excessivo de automação pode infringir os Termos de Serviço do LinkedIn. Use com moderação e responsabilidade.
+
+Desenvolvido por Jorge Fonantes
