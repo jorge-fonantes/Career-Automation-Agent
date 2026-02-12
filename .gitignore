@@ -205,3 +205,20 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+# Ambientes Virtuais
+.venv/
+venv/
+__pycache__/
+
+# Dados Sensíveis
+.env
+*.json
+!master_profile.json
+!answers.json
+
+# Arquivos Temporários do Robô
+chrome_profile/
+output/
+*.log
+*.pdf
+*.docx
