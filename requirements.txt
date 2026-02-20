@@ -1,6 +1,6 @@
-selenium
-webdriver-manager
-reportlab
-python-dotenv
+selenium==4.9.0
+undetected-chromedriver
 requests
-openai
+python-dotenv
+setuptools
+webdriver-manager
