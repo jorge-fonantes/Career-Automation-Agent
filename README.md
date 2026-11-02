@@ -54,13 +54,11 @@ python main.py --navegador  # inclui LinkedIn e Indeed (abre o Chrome e pede log
 python -m pytest            # roda os testes
 ```
 
-## ⏰ Agendamento no Windows
+## ⏰ Automação na nuvem
 
-Rode no máximo 4 vezes por dia, para respeitar o limite recomendado pela Remotive. Na pasta do projeto, no Prompt de Comando:
+O GitHub Actions roda a busca a cada 6 horas, mesmo com o computador desligado (`.github/workflows/buscar-vagas.yml`). Para ativar, cadastre em **Settings > Secrets and variables > Actions** os segredos `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID`.
 
-```bash
-schtasks /Create /TN "Vagas Suporte" /SC HOURLY /MO 6 /TR "cmd /c cd /d %CD% && .venv\Scripts\python.exe main.py"
-```
+O histórico `vagas_vistas.sqlite3` fica no repositório, para a nuvem lembrar o que já enviou. Ele guarda só títulos e links públicos de vagas. Antes de rodar a busca no computador, use `git pull` para não reenviar vagas.
 
 ## ⚙️ Personalização
 

@@ -1,0 +1,49 @@
+name: Buscar vagas
+
+on:
+  schedule:
+    # A cada 6 horas: a Remotive recomenda no máximo 4 consultas por dia
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: buscar-vagas
+
+jobs:
+  buscar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # O modo nuvem não usa navegador, então não precisa do Selenium
+      - run: pip install requests python-dotenv
+
+      - name: Buscar e enviar vagas
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "::error::Configure os segredos TELEGRAM_BOT_TOKEN e TELEGRAM_CHAT_ID"
+            exit 1
+          fi
+          python main.py
+
+      # Roda mesmo com erro: o que já foi entregue não pode ser reenviado
+      - name: Salvar histórico
+        if: always()
+        run: |
+          git add vagas_vistas.sqlite3
+          git diff --cached --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Atualiza historico de vagas"
+          git push
