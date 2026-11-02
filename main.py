@@ -69,15 +69,14 @@ def buscar_no_navegador():
 def enviar(vagas, tg, historico):
     """ Só marca como enviada a vaga que chegou, para uma falha não fazer ela sumir. """
     for texto, bloco in montar_mensagens(vagas):
-        if tg.base_url:
-            if not tg.send_report(texto):
-                print("⚠️ Envio interrompido. As vagas restantes voltam na próxima execução.")
-                return
-            time.sleep(1)
-        else:
+        if not tg.base_url:
             print(texto)
-        if historico:
-            historico.marcar_enviadas(bloco)
+            continue
+        if not tg.send_report(texto):
+            print("⚠️ Envio interrompido. As vagas restantes voltam na próxima execução.")
+            return
+        time.sleep(1)
+        historico.marcar_enviadas(bloco)
 
 def main():
     # Sem isso, o console do Windows pode quebrar ao imprimir emoji

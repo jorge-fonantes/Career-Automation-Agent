@@ -56,6 +56,15 @@ def test_historico_so_marca_o_que_foi_entregue(tmp_path, monkeypatch):
     assert total_blocos > 1
     historico.close()
 
+def test_sem_telegram_nao_grava_historico(tmp_path, capsys):
+    historico = JobHistory(tmp_path / "h.sqlite3")
+    tg = TelegramFalso()
+    tg.base_url = None
+    main.enviar([job(1)], tg, historico)
+    assert historico.novas([job(1)]) == [job(1)]
+    assert "https://x.test" in capsys.readouterr().out
+    historico.close()
+
 def test_historico_persiste_entre_execucoes(tmp_path):
     caminho = tmp_path / "h.sqlite3"
     h = JobHistory(caminho)
