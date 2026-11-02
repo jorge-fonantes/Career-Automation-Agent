@@ -2,6 +2,9 @@ import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 import time
 import random
+from urllib.parse import quote_plus
+
+from sources import Job
 
 class SafeScanner:
     def __init__(self):
@@ -33,32 +36,38 @@ class SafeScanner:
             time.sleep(random.uniform(1.5, 3.0))
 
     def scan_linkedin(self, keyword):
-        print(f"   🔵 LinkedIn: Buscando '{keyword}' (Remote/Worldwide)...")
         vagas = []
-        
-        # URL MÁGICA PARA REMOTO + WORLDWIDE + ÚLTIMAS 24H
+        seen_links = set()
+        # geoId=92000000 -> Worldwide | geoId=106057199 -> Brasil
+        for regiao, geo_id in (("Worldwide", 92000000), ("Brasil", 106057199)):
+            print(f"   🔵 LinkedIn: Buscando '{keyword}' (Remote/{regiao})...")
+            vagas.extend(self._scan_linkedin_regiao(keyword, regiao, geo_id, seen_links))
+        return vagas
+
+    def _scan_linkedin_regiao(self, keyword, regiao, geo_id, seen_links):
+        vagas = []
+
+        # URL MÁGICA PARA REMOTO + ÚLTIMAS 24H
         # f_WT=2 -> Remote
         # f_TPR=r86400 -> Últimas 24h
-        # geoId=92000000 -> Worldwide
-        url = f"https://www.linkedin.com/jobs/search/?keywords={keyword}&f_TPR=r86400&f_WT=2&geoId=92000000"
-        
+        url = f"https://www.linkedin.com/jobs/search/?keywords={quote_plus(keyword)}&f_TPR=r86400&f_WT=2&geoId={geo_id}"
+
         try:
             self.driver.get(url)
             time.sleep(5)
             self.random_scroll()
-            
+
             # Seletores atualizados
             cards = self.driver.find_elements(By.CSS_SELECTOR, "a.job-card-container__link, a.job-card-list__title")
-            
-            seen_links = set()
-            for card in cards[:15]: 
+
+            for card in cards[:15]:
                 try:
                     link = card.get_attribute("href").split("?")[0]
                     text = card.text.strip().split("\n")[0]
-                    
+
                     if link and "/jobs/view/" in link and link not in seen_links:
                         if text: # Só adiciona se tiver título
-                            vagas.append(f"🔵 LK: {text}\n🔗 {link}")
+                            vagas.append(Job(title=text, company="", url=link, source="LinkedIn", location=regiao))
                             seen_links.add(link)
                 except: continue
         except Exception as e:
@@ -69,8 +78,8 @@ class SafeScanner:
         print(f"   🟣 Indeed: Buscando '{keyword}' (Remote)...")
         vagas = []
         # URL indeed com filtro Remote (&sc=0kf%3Aattr(DSQF7)%3B) e Last 24h (fromage=1)
-        url = f"https://br.indeed.com/jobs?q={keyword}&sc=0kf%3Aattr(DSQF7)%3B&fromage=1"
-        
+        url = f"https://br.indeed.com/jobs?q={quote_plus(keyword)}&sc=0kf%3Aattr(DSQF7)%3B&fromage=1"
+
         try:
             self.driver.get(url)
             time.sleep(6) 
@@ -86,10 +95,11 @@ class SafeScanner:
                     except: title = keyword
                     
                     if link and link not in seen_links:
-                        vagas.append(f"🟣 IND: {title}\n🔗 {link}")
+                        vagas.append(Job(title=title, company="", url=link, source="Indeed", location="Brasil"))
                         seen_links.add(link)
                 except: continue
-        except: pass
+        except Exception as e:
+            print(f"   ⚠️ Erro ao ler Indeed: {e}")
         return vagas
 
     def close(self):

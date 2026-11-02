@@ -219,6 +219,7 @@ __pycache__/
 # Arquivos Temporários do Robô
 chrome_profile/
 output/
+vagas_vistas.sqlite3
 *.log
 *.pdf
 *.docx
