@@ -115,7 +115,7 @@ def parse_weworkremotely(xml_texto):
 
 def fetch_himalayas():
     vagas = []
-    for termo in config.TERMOS_BUSCA:
+    for termo in config.TERMOS_BUSCA + config.TERMOS_BUSCA_EXTRA:
         for pagina in range(1, PAGINAS_HIMALAYAS + 1):
             vagas.extend(parse_himalayas(_get("https://himalayas.app/jobs/api/search", q=termo, page=pagina).json()))
             time.sleep(1)
@@ -163,7 +163,7 @@ def parse_workingnomads(dados):
 
 def fetch_remotar():
     vagas = []
-    for termo in config.TERMOS_BUSCA + config.TERMOS_BUSCA_PT:
+    for termo in config.TERMOS_BUSCA + config.TERMOS_BUSCA_EXTRA + config.TERMOS_BUSCA_PT:
         vagas.extend(parse_remotar(_get("https://api.remotar.com.br/jobs", search=termo).json()))
         time.sleep(1)
     return vagas

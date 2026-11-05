@@ -94,3 +94,7 @@ def test_chave_ignora_pontuacao_e_acento():
 def test_rejeita_sucesso_do_cliente_em_portugues():
     assert avaliar(vaga("Analista de Suporte e Sucesso do Aluno", location="Brasil")) is None
     assert avaliar(vaga("Analista de Suporte Técnico Pleno", location="Brasil")) is not None
+
+@pytest.mark.parametrize("titulo", ["Analista Suporte Jr N1", "Técnico de NOC", "Analista de Atendimento Técnico"])
+def test_aceita_titulos_brasileiros_sem_descricao_longa(titulo):
+    assert avaliar(vaga(titulo, location="Brasil")) is not None

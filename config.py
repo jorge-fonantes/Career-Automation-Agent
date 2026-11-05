@@ -10,6 +10,14 @@ TERMOS_BUSCA = [
     "support engineer",
 ]
 
+# Buscas extras em inglês, só para fontes sem limite de uso (a Remotive pede moderação)
+TERMOS_BUSCA_EXTRA = [
+    "desktop support",
+    "product support",
+    "customer support engineer",
+    "technical support specialist",
+]
+
 # Buscas em português, para as fontes brasileiras (InfoJobs, Remotar) e o modo navegador
 TERMOS_BUSCA_PT = [
     "suporte técnico",
@@ -17,6 +25,9 @@ TERMOS_BUSCA_PT = [
     "help desk",
     "service desk",
     "suporte ti",
+    "suporte n1",
+    "suporte n2",
+    "atendimento técnico",
 ]
 
 TERMOS_BUSCA_NAVEGADOR = TERMOS_BUSCA + TERMOS_BUSCA_PT[:2]
@@ -35,6 +46,7 @@ TITULOS_TECNICOS = [
     "tecnico em informatica", "tecnico de informatica", "suporte de ti", "suporte ti",
     "suporte n1", "suporte n2", "suporte n3", "suporte a sistemas",
     "suporte de sistemas", "suporte de infraestrutura", "soporte tecnico",
+    "analista suporte", "atendimento tecnico", "noc", "tecnico de noc", "analista de noc",
 ]
 
 # Título ambíguo: só vale se a descrição mostrar conteúdo técnico
