@@ -31,8 +31,11 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
-            echo "::error::Configure os segredos TELEGRAM_BOT_TOKEN e TELEGRAM_CHAT_ID"
+          faltando=""
+          [ -z "$TELEGRAM_BOT_TOKEN" ] && faltando="$faltando TELEGRAM_BOT_TOKEN"
+          [ -z "$TELEGRAM_CHAT_ID" ] && faltando="$faltando TELEGRAM_CHAT_ID"
+          if [ -n "$faltando" ]; then
+            echo "::error::Segredo não encontrado em Repository secrets:$faltando"
             exit 1
           fi
           python main.py
