@@ -121,6 +121,17 @@ def test_enviar_informa_falha(tmp_path, monkeypatch):
     assert main.enviar([job(1)], TelegramFalso(), historico) is True
     historico.close()
 
+def test_telegram_envia_para_varios_destinatarios(monkeypatch):
+    bot, enviados = bot_com_respostas(monkeypatch, [RespostaFalsa(200), RespostaFalsa(400)])
+    monkeypatch.setattr(bot, "chat_ids", ["111", "222"])
+    assert bot.send_report("x") is False
+    assert [e["chat_id"] for e in enviados] == ["111", "222"]
+
+def test_telegram_le_lista_de_chat_ids(monkeypatch):
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "t")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "111, 222,")
+    assert telegram_notifier.TelegramBot().chat_ids == ["111", "222"]
+
 def test_fonte_com_erro_nao_derruba_as_outras(monkeypatch):
     def quebra(): raise TimeoutError("fora do ar")
     monkeypatch.setattr(sources, "FONTES", {"Ruim": quebra, "Boa": lambda: [job(1)]})

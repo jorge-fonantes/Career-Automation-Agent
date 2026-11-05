@@ -9,9 +9,11 @@ load_dotenv()
 class TelegramBot:
     def __init__(self):
         self.token = os.getenv("TELEGRAM_BOT_TOKEN")
-        self.chat_id = os.getenv("TELEGRAM_CHAT_ID")
+        # Aceita mais de um destinatário, separados por vírgula: "111,222"
+        self.chat_ids = [c.strip() for c in (os.getenv("TELEGRAM_CHAT_ID") or "").split(",") if c.strip()]
+        self.chat_id = self.chat_ids[0] if self.chat_ids else None
 
-        if not self.token or not self.chat_id:
+        if not self.token or not self.chat_ids:
             print("⚠️ AVISO: Configurações do Telegram não encontradas no .env")
             self.base_url = None
         else:
@@ -20,22 +22,28 @@ class TelegramBot:
     def verificar(self):
         """ Testa token e chat ID sem mandar mensagem: só mostra "digitando..." por um instante. """
         if not self.base_url: return False
-        try:
-            resp = requests.post(f"{self.base_url}/sendChatAction",
-                                 json={"chat_id": self.chat_id, "action": "typing"}, timeout=30)
-        except requests.RequestException as e:
-            print(f"⚠️ Erro Telegram: falha de conexão ({type(e).__name__})")
-            return False
-        if not resp.ok:
-            print(f"⚠️ Erro Telegram: {resp.status_code} {resp.text[:200]}")
-        return resp.ok
+        for chat_id in self.chat_ids:
+            try:
+                resp = requests.post(f"{self.base_url}/sendChatAction",
+                                     json={"chat_id": chat_id, "action": "typing"}, timeout=30)
+            except requests.RequestException as e:
+                print(f"⚠️ Erro Telegram: falha de conexão ({type(e).__name__})")
+                return False
+            if not resp.ok:
+                print(f"⚠️ Erro Telegram: {resp.status_code} {resp.text[:200]}")
+                return False
+        return True
 
     def send_report(self, message):
-        """ Envia texto em HTML do Telegram. Devolve True só se a mensagem foi aceita. """
+        """ Envia texto em HTML do Telegram. Devolve True só se todos os destinatários receberam. """
         if not self.base_url: return False
+        # all() pararia no primeiro erro e deixaria os outros sem a mensagem
+        return all([self._enviar(chat_id, message) for chat_id in self.chat_ids])
+
+    def _enviar(self, chat_id, message):
         url = f"{self.base_url}/sendMessage"
         payload = {
-            "chat_id": self.chat_id,
+            "chat_id": chat_id,
             "text": message,
             "parse_mode": "HTML",
             "disable_web_page_preview": True,

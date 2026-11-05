@@ -43,6 +43,8 @@ pip install -r requirements.txt
 
 Crie um arquivo `.env` na raiz do projeto. Sem ele, as vagas aparecem só no terminal.
 
+Para mandar as vagas para mais de uma pessoa, coloque os chat IDs separados por vírgula: `TELEGRAM_CHAT_ID=111111,222222`. Cada pessoa precisa mandar uma mensagem ao bot antes.
+
 ```
 TELEGRAM_BOT_TOKEN=seu_token
 TELEGRAM_CHAT_ID=seu_chat_id
