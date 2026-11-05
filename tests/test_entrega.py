@@ -2,7 +2,8 @@ from datetime import timezone
 
 import main
 from history import JobHistory
-from sources import Job, coletar_vagas, parse_himalayas, parse_remoteok, parse_weworkremotely
+from sources import (Job, coletar_vagas, parse_himalayas, parse_infojobs, parse_remoteok, parse_remotar,
+                     parse_weworkremotely)
 import sources
 import telegram_notifier
 
@@ -135,6 +136,42 @@ def test_parse_remoteok_ignora_aviso_legal():
 def test_parse_himalayas_sem_restricao_vira_worldwide():
     dados = {"jobs": [{"title": "Help Desk", "applicationLink": "https://x.test", "locationRestrictions": [], "pubDate": 1793317142}]}
     assert parse_himalayas(dados)[0].location == "Worldwide"
+
+CARTAO_INFOJOBS = """
+<div id="vacancy1" data-id="1" class="js_cardLink" data-href="/vaga-de-suporte-tecnico-em-sao-paulo__1.aspx">
+<div hidden class="js_date" data-value="2026/10/29 04:30:00"></div>
+<h2 class="h3 js_vacancyTitle">
+Suporte T&#xE9;cnico N1
+</h2>
+<a href="https://www.infojobs.com.br/empresa-indigo-app__123.aspx">Indigo<span data-bs-title="<div>selo</div>">App</span></a>
+Home office
+<div class="text-medium">Atendimento de chamados, troubleshooting e redes.</div>
+</div>
+<div id="vacancy2" data-id="2" class="js_cardLink" data-href="/vaga-de-presencial__2.aspx">
+<h2 class="h3 js_vacancyTitle">Suporte Presencial</h2>
+Presencial
+</div>
+"""
+
+def test_parse_infojobs_le_cartao_e_ignora_presencial():
+    vagas = parse_infojobs(CARTAO_INFOJOBS)
+    assert len(vagas) == 1
+    v = vagas[0]
+    assert (v.title, v.company, v.location) == ("Suporte Técnico N1", "Indigo App", "Brasil")
+    assert v.url == "https://www.infojobs.com.br/vaga-de-suporte-tecnico-em-sao-paulo__1.aspx"
+    assert v.published.utcoffset().total_seconds() == -3 * 3600
+    assert "troubleshooting" in v.description
+
+def test_parse_remotar_so_remotas_e_link_externo():
+    dados = {"data": [
+        {"id": 1, "title": "Suporte N2", "type": "remote", "isExternalLink": True,
+         "externalLink": "https://ats.test/1", "company": {"name": "Acme"}, "createdAt": "2026-11-04T22:35:17.113-03:00"},
+        {"id": 2, "title": "Help Desk", "type": "remote", "isExternalLink": False, "company": {"name": "Beta"}},
+        {"id": 3, "title": "Suporte", "type": "hybrid", "company": {"name": "Gama"}},
+    ]}
+    vagas = parse_remotar(dados)
+    assert [v.url for v in vagas] == ["https://ats.test/1", "https://remotar.com.br/job/2"]
+    assert all(v.location == "Brasil" for v in vagas)
 
 def test_parse_wwr_separa_empresa_e_cargo():
     xml = """<rss><channel><item><title>Acme: IT Support: Tier 2</title>

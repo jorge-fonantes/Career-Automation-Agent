@@ -1,8 +1,10 @@
 import html
+import re
 import time
+import unicodedata
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 
 import requests
@@ -145,12 +147,96 @@ def parse_jobicy(dados):
         published=_data_iso(j.get("pubDate")),
     ) for j in dados.get("jobs", [])]
 
+def fetch_workingnomads():
+    return parse_workingnomads(_get("https://www.workingnomads.com/api/exposed_jobs/").json())
+
+def parse_workingnomads(dados):
+    return [Job(
+        title=j["title"],
+        company=j.get("company_name", ""),
+        url=j["url"],
+        source="Working Nomads",
+        location=j.get("location", ""),
+        description=j.get("description", ""),
+        published=_data_iso(j.get("pub_date")),
+    ) for j in dados]
+
+def fetch_remotar():
+    vagas = []
+    for termo in config.TERMOS_BUSCA + config.TERMOS_BUSCA_PT:
+        vagas.extend(parse_remotar(_get("https://api.remotar.com.br/jobs", search=termo).json()))
+        time.sleep(1)
+    return vagas
+
+def parse_remotar(dados):
+    vagas = []
+    for j in dados.get("data", []):
+        if j.get("type") != "remote" or j.get("expired"):
+            continue
+        empresa = j.get("companyDisplayName") or (j.get("company") or {}).get("name", "")
+        url = j.get("externalLink") if j.get("isExternalLink") else None
+        vagas.append(Job(
+            title=j["title"],
+            company=empresa,
+            url=url or f"https://remotar.com.br/job/{j['id']}",
+            source="Remotar",
+            # O Remotar é brasileiro: sem país informado, a vaga é para o Brasil
+            location="Brasil" if not j.get("countryId") else str(j.get("country") or ""),
+            description=j.get("description") or "",
+            published=_data_iso(j.get("createdAt")),
+        ))
+    return vagas
+
+RE_CARD_INFOJOBS = re.compile(r'id="vacancy\d+"[^>]*data-href="([^"]+)"(.*?)(?=id="vacancy\d+"|\Z)', re.S)
+RE_TITULO_INFOJOBS = re.compile(r'js_vacancyTitle[^>]*>\s*(.*?)\s*</h2>', re.S)
+RE_DATA_INFOJOBS = re.compile(r'js_date" data-value="([^"]+)"')
+RE_EMPRESA_INFOJOBS = re.compile(r'/empresa-([a-z0-9-]+)__\d+')
+RE_RESUMO_INFOJOBS = re.compile(r'class="text-medium">\s*([^<]+?)\s*</div>')
+FUSO_BRASIL = timezone(timedelta(hours=-3))
+
+def fetch_infojobs():
+    vagas = []
+    for termo in config.TERMOS_BUSCA_PT:
+        # Usa o filtro "Home office" do próprio InfoJobs
+        slug = "+".join(_sem_acento(termo).split())
+        pagina = _get(f"https://www.infojobs.com.br/vagas-de-emprego-{slug}-trabalho-home-office.aspx").text
+        vagas.extend(parse_infojobs(pagina))
+        time.sleep(1)
+    return vagas
+
+def _sem_acento(texto):
+    return "".join(c for c in unicodedata.normalize("NFKD", texto) if not unicodedata.combining(c)).lower()
+
+def parse_infojobs(pagina):
+    vagas = []
+    for href, cartao in RE_CARD_INFOJOBS.findall(pagina):
+        titulo = RE_TITULO_INFOJOBS.search(cartao)
+        if not titulo or "Home office" not in cartao:
+            continue
+        data = RE_DATA_INFOJOBS.search(cartao)
+        empresa = RE_EMPRESA_INFOJOBS.search(cartao)
+        resumos = RE_RESUMO_INFOJOBS.findall(cartao)
+        vagas.append(Job(
+            title=titulo.group(1),
+            # O nome da empresa vem misturado com selos no HTML; o endereço da página dela é mais limpo
+            company=empresa.group(1).replace("-", " ").title() if empresa else "",
+            url="https://www.infojobs.com.br" + html.unescape(href),
+            source="InfoJobs",
+            location="Brasil",
+            description=max(resumos, key=len) if resumos else "",
+            published=datetime.strptime(data.group(1), "%Y/%m/%d %H:%M:%S").replace(tzinfo=FUSO_BRASIL) if data else None,
+        ))
+    return vagas
+
 FONTES = {
     "Remotive": fetch_remotive,
     "Remote OK": fetch_remoteok,
     "We Work Remotely": fetch_weworkremotely,
     "Himalayas": fetch_himalayas,
     "Jobicy": fetch_jobicy,
+    "Working Nomads": fetch_workingnomads,
+    "Remotar": fetch_remotar,
+    "InfoJobs": fetch_infojobs,
 }
 
 def coletar_vagas():

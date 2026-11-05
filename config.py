@@ -10,11 +10,16 @@ TERMOS_BUSCA = [
     "support engineer",
 ]
 
-# Buscas extras do modo navegador (LinkedIn/Indeed), onde há vagas em português
-TERMOS_BUSCA_NAVEGADOR = TERMOS_BUSCA + [
+# Buscas em português, para as fontes brasileiras (InfoJobs, Remotar) e o modo navegador
+TERMOS_BUSCA_PT = [
     "suporte técnico",
     "analista de suporte",
+    "help desk",
+    "service desk",
+    "suporte ti",
 ]
+
+TERMOS_BUSCA_NAVEGADOR = TERMOS_BUSCA + TERMOS_BUSCA_PT[:2]
 
 # Título que, sozinho, já identifica uma vaga de suporte técnico
 TITULOS_TECNICOS = [
@@ -56,6 +61,7 @@ TITULOS_EXCLUIDOS = [
     "gerente", "coordenador", "coordenadora", "diretor", "diretora",
     "sales", "account executive", "business development", "customer success",
     "recruiter", "recruitment", "marketing", "designer", "copywriter",
+    "sucesso do cliente", "sucesso do aluno", "customer experience",
     "software engineer", "software developer", "developer", "accountant",
     "bookkeeper", "nurse", "medical", "dental", "legal", "paralegal", "insurance",
     "administrative support", "executive assistant", "virtual assistant",

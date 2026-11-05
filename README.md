@@ -22,9 +22,12 @@ Agregador que procura vagas em fontes públicas, descarta o que não é suporte 
 | We Work Remotely | RSS | Não |
 | Himalayas | API pública | Não |
 | Jobicy | API pública | Não |
+| Working Nomads | API pública | Não |
+| Remotar (Brasil) | API pública | Não |
+| InfoJobs (Brasil) | Página com filtro Home office | Não |
 | LinkedIn e Indeed | Chrome (`--navegador`) | Sim, manual |
 
-As fontes públicas têm poucas vagas escritas em português. Para ampliar a busca no Brasil, use `--navegador`.
+O Indeed bloqueia acesso automático, por isso fica só no modo `--navegador`, com o seu login. A leitura do InfoJobs depende do HTML do site e pode parar de funcionar se ele mudar.
 
 ## 📦 Instalação
 
@@ -66,7 +69,7 @@ Tudo que define o tipo de vaga fica em `config.py`: termos de busca, títulos ac
 
 ## 🔮 Roadmap
 
-- [ ] Adicionar **Gupy** e outras fontes de vagas em português.
+- [ ] Adicionar **Gupy**.
 - [ ] Adicionar **Greenhouse** e **Lever** de empresas remote-first.
 - [ ] Filtro de salário.
 

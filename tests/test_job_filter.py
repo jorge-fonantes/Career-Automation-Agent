@@ -90,3 +90,7 @@ def test_filtrar_junta_mesma_vaga_de_fontes_diferentes_e_ordena():
 
 def test_chave_ignora_pontuacao_e_acento():
     assert chave_vaga(vaga("Técnico de Suporte!", company="ACME Inc.")) == chave_vaga(vaga("tecnico de suporte", company="Acme  inc"))
+
+def test_rejeita_sucesso_do_cliente_em_portugues():
+    assert avaliar(vaga("Analista de Suporte e Sucesso do Aluno", location="Brasil")) is None
+    assert avaliar(vaga("Analista de Suporte Técnico Pleno", location="Brasil")) is not None
