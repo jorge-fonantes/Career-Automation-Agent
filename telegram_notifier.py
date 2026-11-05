@@ -17,6 +17,19 @@ class TelegramBot:
         else:
             self.base_url = f"https://api.telegram.org/bot{self.token}"
 
+    def verificar(self):
+        """ Testa token e chat ID sem mandar mensagem: só mostra "digitando..." por um instante. """
+        if not self.base_url: return False
+        try:
+            resp = requests.post(f"{self.base_url}/sendChatAction",
+                                 json={"chat_id": self.chat_id, "action": "typing"}, timeout=30)
+        except requests.RequestException as e:
+            print(f"⚠️ Erro Telegram: falha de conexão ({type(e).__name__})")
+            return False
+        if not resp.ok:
+            print(f"⚠️ Erro Telegram: {resp.status_code} {resp.text[:200]}")
+        return resp.ok
+
     def send_report(self, message):
         """ Envia texto em HTML do Telegram. Devolve True só se a mensagem foi aceita. """
         if not self.base_url: return False

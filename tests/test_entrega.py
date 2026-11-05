@@ -107,6 +107,19 @@ def test_telegram_429_tenta_de_novo(monkeypatch):
     assert bot.send_report("x") is True
     assert len(enviados) == 2
 
+def test_telegram_verificar_detecta_chat_errado(monkeypatch):
+    bot, enviados = bot_com_respostas(monkeypatch, [RespostaFalsa(400), RespostaFalsa(200)])
+    assert bot.verificar() is False
+    assert bot.verificar() is True
+    assert enviados[0]["action"] == "typing"
+
+def test_enviar_informa_falha(tmp_path, monkeypatch):
+    monkeypatch.setattr(main.time, "sleep", lambda _: None)
+    historico = JobHistory(tmp_path / "h.sqlite3")
+    assert main.enviar([job(1)], TelegramFalso(falhar_na=1), historico) is False
+    assert main.enviar([job(1)], TelegramFalso(), historico) is True
+    historico.close()
+
 def test_fonte_com_erro_nao_derruba_as_outras(monkeypatch):
     def quebra(): raise TimeoutError("fora do ar")
     monkeypatch.setattr(sources, "FONTES", {"Ruim": quebra, "Boa": lambda: [job(1)]})

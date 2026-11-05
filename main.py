@@ -74,9 +74,10 @@ def enviar(vagas, tg, historico):
             continue
         if not tg.send_report(texto):
             print("⚠️ Envio interrompido. As vagas restantes voltam na próxima execução.")
-            return
+            return False
         time.sleep(1)
         historico.marcar_enviadas(bloco)
+    return True
 
 def main():
     # Sem isso, o console do Windows pode quebrar ao imprimir emoji
@@ -106,11 +107,18 @@ def main():
     historico = JobHistory(config.ARQUIVO_HISTORICO)
     tg = TelegramBot()
     try:
+        # Sem esse teste, um token errado só apareceria no dia em que surgisse uma vaga nova
+        if tg.base_url and not tg.verificar():
+            print("❌ Telegram recusou o token ou o chat ID.")
+            sys.exit(1)
+
         novas = historico.novas(selecionadas)
         print(f"✅ Vagas novas: {len(novas)}")
 
         if novas:
-            enviar(novas[:config.MAX_VAGAS_RELATORIO], tg, historico)
+            # Código de saída diferente de zero faz o agendador registrar a falha
+            if not enviar(novas[:config.MAX_VAGAS_RELATORIO], tg, historico):
+                sys.exit(1)
         elif not vagas:
             # Sem isso, todas as fontes fora do ar pareceria "nenhuma vaga nova"
             tg.send_report(f"⚠️ Nenhuma fonte respondeu: {html.escape(', '.join(falhas))}")
